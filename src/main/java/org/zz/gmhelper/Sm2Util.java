@@ -26,29 +26,55 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
+/**
+ *
+ */
 public class Sm2Util extends GmBaseUtil {
     //////////////////////////////////////////////////////////////////////////////////////
-    /*
+    /**
      * 以下为SM2推荐曲线参数
      */
     public final static BigInteger SM2_ECC_P = new BigInteger(
-        "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFF", 16);
+            "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFF", 16);
+    /**
+     *
+     */
     public final static BigInteger SM2_ECC_A = new BigInteger(
-        "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFC", 16);
+            "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFFFFFFFFFC", 16);
+    /**
+     *
+     */
     public final static BigInteger SM2_ECC_B = new BigInteger(
-        "28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93", 16);
+            "28E9FA9E9D9F5E344D5A9E4BCF6509A7F39789F515AB8F92DDBCBD414D940E93", 16);
+    /**
+     *
+     */
     public final static BigInteger SM2_ECC_N = new BigInteger(
-        "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123", 16);
+            "FFFFFFFEFFFFFFFFFFFFFFFFFFFFFFFF7203DF6B21C6052B53BBF40939D54123", 16);
+    /**
+     *
+     */
     public final static BigInteger SM2_ECC_GX = new BigInteger(
-        "32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7", 16);
+            "32C4AE2C1F1981195F9904466A39C9948FE30BBFF2660BE1715A4589334C74C7", 16);
+    /**
+     *
+     */
     public final static BigInteger SM2_ECC_GY = new BigInteger(
-        "BC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0", 16);
+            "BC3736A2F4F6779C59BDCEE36B692153D0A9877CC62A474002DF32E52139F0A0", 16);
+    /**
+     *
+     */
     public static final ECCurve CURVE = new ECCurve.Fp(SM2_ECC_P, SM2_ECC_A, SM2_ECC_B, null, null);
+    /**
+     *
+     */
     public static final ECPoint G_POINT = CURVE.createPoint(SM2_ECC_GX, SM2_ECC_GY);
+    /**
+     *
+     */
     public static final ECDomainParameters DOMAIN_PARAMS = new ECDomainParameters(CURVE, G_POINT,
-        SM2_ECC_N, BigInteger.ONE);
+            SM2_ECC_N, BigInteger.ONE);
     //////////////////////////////////////////////////////////////////////////////////////
-
     public static final int SM3_DIGEST_LENGTH = 32;
 
     /**
@@ -70,7 +96,7 @@ public class Sm2Util extends GmBaseUtil {
      * @throws InvalidCipherTextException
      */
     public static byte[] encrypt(ECPublicKeyParameters pubKey, byte[] srcData)
-        throws InvalidCipherTextException {
+            throws InvalidCipherTextException {
         SM2Engine engine = new SM2Engine();
         ParametersWithRandom pwr = new ParametersWithRandom(pubKey, new SecureRandom());
         engine.init(true, pwr);
@@ -86,7 +112,7 @@ public class Sm2Util extends GmBaseUtil {
      * @throws InvalidCipherTextException
      */
     public static byte[] decrypt(ECPrivateKeyParameters priKey, byte[] sm2CipherText)
-        throws InvalidCipherTextException {
+            throws InvalidCipherTextException {
         SM2Engine engine = new SM2Engine();
         engine.init(false, priKey);
         return engine.processBlock(sm2CipherText, 0, sm2CipherText.length);
@@ -112,7 +138,7 @@ public class Sm2Util extends GmBaseUtil {
      * @return
      */
     public static Sm2EncryptResult parseSm2CipherText(int curveLength, int digestLength,
-        byte[] cipherText) {
+                                                      byte[] cipherText) {
         byte[] c1 = new byte[curveLength * 2 + 1];
         System.arraycopy(cipherText, 0, c1, 0, c1.length);
         byte[] c2 = new byte[cipherText.length - c1.length - digestLength];
@@ -149,7 +175,7 @@ public class Sm2Util extends GmBaseUtil {
      * @throws IOException
      */
     public static byte[] derEncodeSm2CipherText(int curveLength, int digestLength, byte[] cipherText)
-        throws IOException {
+            throws IOException {
         int startPos = 1;
 
         byte[] c1x = new byte[curveLength];
@@ -184,7 +210,7 @@ public class Sm2Util extends GmBaseUtil {
      * @throws IOException
      */
     public static byte[] parseSm2CipherTextDer(byte[] derCipherText)
-        throws IOException {
+            throws IOException {
         ASN1Sequence as = DERSequence.getInstance(derCipherText);
         byte[] c1x = ((ASN1Integer) as.getObjectAt(0)).getValue().toByteArray();
         byte[] c1y = ((ASN1Integer) as.getObjectAt(1)).getValue().toByteArray();
@@ -224,7 +250,7 @@ public class Sm2Util extends GmBaseUtil {
      * @throws CryptoException
      */
     public static byte[] sign(ECPrivateKeyParameters priKey, byte[] srcData)
-        throws NoSuchAlgorithmException, NoSuchProviderException, CryptoException {
+            throws NoSuchAlgorithmException, NoSuchProviderException, CryptoException {
         return sign(priKey, null, srcData);
     }
 
@@ -240,7 +266,7 @@ public class Sm2Util extends GmBaseUtil {
      * @throws CryptoException
      */
     public static byte[] sign(ECPrivateKeyParameters priKey, byte[] withId, byte[] srcData)
-        throws NoSuchAlgorithmException, NoSuchProviderException, CryptoException {
+            throws NoSuchAlgorithmException, NoSuchProviderException, CryptoException {
         SM2Signer signer = new SM2Signer();
         CipherParameters param = null;
         ParametersWithRandom pwr = new ParametersWithRandom(priKey, new SecureRandom());
@@ -277,7 +303,7 @@ public class Sm2Util extends GmBaseUtil {
      * @return 验签成功返回true，失败返回false
      */
     public static boolean verify(ECPublicKeyParameters pubKey, byte[] withId, byte[] srcData,
-        byte[] sign) {
+                                 byte[] sign) {
         SM2Signer signer = new SM2Signer();
         CipherParameters param = null;
         if (withId != null) {
